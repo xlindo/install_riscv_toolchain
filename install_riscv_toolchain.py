@@ -1,9 +1,8 @@
 #!/usr/bin/python3
-
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-24 17:01:00
+LastEditTime: 2022-05-24 19:20:29
 LastEditors: hi@xlindo.com
 Description: Automatically install
     * riscv-gnu-toolchain
@@ -14,14 +13,14 @@ Prerequisites:
     * (CentOS-like) yum -y install autoconf automake python3 libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel
 Usage:
     0. By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
-    1. [New install] `python3 install_riscv_toolchain.py {linux | elf | linux-rvv}`
+    1. [New install] `python3 install_riscv_toolchain.py {linux | elf | elf-rvv}`
         1.1 `linux` for `riscv64-linux-unknown-gnu`
         1.2 `elf` for `riscv64-unknown-elf`
-        1.3 `linux-rvv` for `riscv64-linux-unknown-gnu` with `rvv`
+        1.3 `elf-rvv` for `riscv64-unknown-elf` with `rvv`
     2. [Manually]`python3 install_riscv_toolchain.py` and **follow the prompts**:
         2.1. Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
         2.2. Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
-        2.3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-linux-unknown-gnu` with `rvv`
+        2.3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`
         2.4. Waiting, and the compiling result will be in `RISCV_INSTALL`
 License: GPLv3
 Copyright (c) 2022 by https://xlindo.com, All Rights Reserved.
@@ -30,7 +29,7 @@ from multiprocessing import Pool
 import os
 import sys
 
-RISCV_INSTALL = os.getcwd()+"/riscv_install"
+RISCV_INSTALL = os.getcwd() + "/riscv_install"
 
 RISCV_GNU_TOOLCHAIN_REPO = "https://github.91chi.fun/https://github.com/riscv/riscv-gnu-toolchain"
 RISCV_PK_REPO = "https://github.91chi.fun/https://github.com/riscv-software-src/riscv-pk.git"
@@ -93,8 +92,8 @@ def riscv64_linux_unknown_gnu_12():
         os.system("rm -rf " + RISCV_INSTALL_LINUX_12)
     # install riscv-gnu-toolchain
     os.chdir("riscv-gnu-toolchain")
-    os.system("cd riscv-gcc && git checkout riscv-gcc-12.1.0")
-    os.system("./configure --prefix="+RISCV_INSTALL_LINUX_12)
+    os.system("cd riscv-gcc && git reset --hard origin/riscv-gcc-12.1.0")
+    os.system("./configure --prefix=" + RISCV_INSTALL_LINUX_12)
     os.system("make linux -j48")
     os.chdir("..")
 
@@ -117,7 +116,7 @@ def riscv64_linux_unknown_gnu_12():
         os.system("rm -rf build")
     os.mkdir("build")
     os.chdir("build")
-    os.system("../configure --prefix="+RISCV_INSTALL_LINUX_12)
+    os.system("../configure --prefix=" + RISCV_INSTALL_LINUX_12)
     os.system("make -j48 && make install")
     os.chdir("../..")
 
@@ -130,15 +129,21 @@ def riscv64_unknown_elf_12():
         os.system("rm -rf " + RISCV_INSTALL_12)
     # install riscv-gnu-toolchain
     os.chdir("riscv-gnu-toolchain")
-    os.system("cd riscv-gcc && git checkout riscv-gcc-12.1.0")
-    os.system("./configure --prefix="+RISCV_INSTALL_12)
+    os.system("cd riscv-gcc && git reset --hard origin/riscv-gcc-12.1.0")
+    os.system("./configure --prefix=" + RISCV_INSTALL_12)
     os.system("make -j48")
     os.chdir("..")
 
     # install riscv-pk
     os.chdir("riscv-pk")
+    if os.path.exists("build"):
+        os.system("rm -rf build")
+    os.mkdir("build")
+    os.chdir("build")
     os.environ["PATH"] = RISCV_INSTALL_12 + "/bin:" + os.getenv("PATH")
-    os.system("../configure --host=riscv64-unknown-elf --prefix="+RISCV_INSTALL_12)
+    os.system("../configure --host=riscv64-unknown-elf --prefix=" +
+              RISCV_INSTALL_12)
+    os.system("make -j48 && make install")
     os.chdir("../..")
 
     # install riscv-isa-sim (spike)
@@ -147,21 +152,22 @@ def riscv64_unknown_elf_12():
         os.system("rm -rf build")
     os.mkdir("build")
     os.chdir("build")
-    os.system("../configure --prefix="+RISCV_INSTALL_12)
+    os.system("../configure --prefix=" + RISCV_INSTALL_12)
+    os.system("make -j48 && make install")
     os.chdir("../..")
 
     return RISCV_INSTALL_12
 
 
-def riscv64_linux_unknown_gnu_rvv_12():
+def riscv64_unknown_elf_rvv_12():
     RISCV_INSTALL_LINUX_RVV_12 = RISCV_INSTALL + "/linux_rvv_12"
     if os.path.exists(RISCV_INSTALL_LINUX_RVV_12):
         os.system("rm -rf " + RISCV_INSTALL_LINUX_RVV_12)
     # install riscv-gnu-toolchain
     os.chdir("riscv-gnu-toolchain")
-    os.system("cd riscv-gcc && git checkout riscv-gcc-rvv-next")
-    os.system("./configure --prefix="+RISCV_INSTALL_LINUX_RVV_12)
-    os.system("make linux -j48")
+    os.system("cd riscv-gcc && git reset --hard origin/riscv-gcc-rvv-next")
+    os.system("./configure --with-arch=rv64gcv --with-abi=lp64d --prefix=" + RISCV_INSTALL_LINUX_RVV_12)
+    os.system("make -j48")
     os.chdir("..")
 
     # install riscv-pk
@@ -172,8 +178,9 @@ def riscv64_linux_unknown_gnu_rvv_12():
     os.chdir("build")
     os.environ["PATH"] = RISCV_INSTALL_LINUX_RVV_12 + \
         "/bin:" + os.getenv("PATH")
-    os.system("../configure --host=riscv64-unknown-linux-gnu --prefix=" +
+    os.system("../configure --host=riscv64-unknown-elf --prefix=" +
               RISCV_INSTALL_LINUX_RVV_12)
+    os.system("make -j48 && make install")
     os.chdir("../..")
 
     # install riscv-isa-sim (spike)
@@ -182,7 +189,8 @@ def riscv64_linux_unknown_gnu_rvv_12():
         os.system("rm -rf build")
     os.mkdir("build")
     os.chdir("build")
-    os.system("../configure --prefix="+RISCV_INSTALL_LINUX_RVV_12)
+    os.system("../configure --prefix=" + RISCV_INSTALL_LINUX_RVV_12)
+    os.system("make -j48 && make install")
     os.chdir("../..")
 
     return RISCV_INSTALL_LINUX_RVV_12
@@ -190,28 +198,30 @@ def riscv64_linux_unknown_gnu_rvv_12():
 
 if __name__ == "__main__":
     print("RISC-V toolchain will be installed into " + RISCV_INSTALL)
+    install_path = ""
     if sys.argv[1] == "linux":
         # Automatically install riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk without interruption, BUT all things will be reconstructed.
         clone_repos()
         update_gitmodules()
-        riscv64_linux_unknown_gnu_12()
+        install_path = riscv64_linux_unknown_gnu_12()
         sys.exit(0)
     elif sys.argv[1] == "elf":
         # Automatically install riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk without interruption.
         clone_repos()
         update_gitmodules()
-        riscv64_unknown_elf_12()
+        install_path = riscv64_unknown_elf_12()
         sys.exit(0)
-    elif sys.argv[1] == "linux-rvv":
+    elif sys.argv[1] == "elf-rvv":
         # Automatically install riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk without interruption.
         clone_repos()
         update_gitmodules()
-        riscv64_linux_unknown_gnu_rvv_12()
+        install_path = riscv64_unknown_elf_rvv_12()
         sys.exit(0)
     else:
         # Clone repos
         opt_clone_repos = input(
-            "Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) ")
+            "Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) "
+        )
         if opt_clone_repos in ['y', 'Y']:
             clone_repos()
         else:
@@ -229,18 +239,17 @@ if __name__ == "__main__":
         opt_build_targets = input("""Choose the building targets: (1/2/3)
 1. riscv64-linux-unknown-gnu, spike and pk
 2. riscv64-unknown-elf, spike and pk
-3. riscv64-linux-unknown-gnu with rvv, spike and pk
+3. riscv64-unknown-elf with rvv, spike and pk
 
 >>> """)
-        install_path = ""
         if "1" == opt_build_targets:
             install_path = riscv64_linux_unknown_gnu_12()
         elif "2" == opt_build_targets:
             install_path = riscv64_unknown_elf_12()
         elif "3" == opt_build_targets:
-            install_path = riscv64_linux_unknown_gnu_rvv_12()
+            install_path = riscv64_unknown_elf_rvv_12()
         else:
             print("Invalid input...quit...")
 
-        print("Script finished! You can set the install path " +
-              install_path + " in environment.")
+    print("Script finished! You can set the install path " + install_path +
+          " in environment.")

@@ -17,15 +17,27 @@ By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
 
 This script could be executed with or without an option.
 
-* [New install] `python3 install_riscv_toolchain.py {linux | elf | linux-rvv}`
+* [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv}`
     1. `linux` for `riscv64-linux-unknown-gnu`
     2. `elf` for `riscv64-unknown-elf`
-    3. `linux-rvv` for `riscv64-linux-unknown-gnu` with `rvv`
+    3. `elf-rvv` for `riscv64-unknown-elf` with `rvv`
 * [Manually]`python3 install_riscv_toolchain.py` and follow the prompts:
     1. Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
     2. Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
-    3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-linux-unknown-gnu` with `rvv`
+    3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`
     4. Waiting, and the compiling result will be in `RISCV_INSTALL`
+
+### Example:
+    
+`python3 install_riscv_toolchain.py elf elf-rvv`
+
+This will automatically install `spike`, `pk`, `riscv64-unknown-elf`-toolchain and `riscv64-unknown-elf`-toolchain(with rvv) in `./riscv_install/{elf, elf-rvv}`.
+
+### Options in the script:
+
+ * RISCV_INSTALL, the installation path
+ * NUM_CORES, the number of cores for your CPU
+ * *_REPO urls, in case you have unlimited github access
 
 ## Authors
 

@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-26 20:35:48
+LastEditTime: 2022-05-26 20:54:15
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -28,8 +28,7 @@ Prerequisites:
                 * echo "source /opt/rh/devtoolset-7/enable" >> ~/.bash_profile 
             * CMake 3.13.4+ (required by LLVM)
                 * yum install openssl openssl-devel -y
-                * git clone https://github.91chi.fun/https://github.com/Kitware/CMake
-                * cd CMake 
+                * git clone https://github.91chi.fun/https://github.com/Kitware/CMake && cd CMake
                 * ./bootstrap && make
                 * make install
             * Ninja 

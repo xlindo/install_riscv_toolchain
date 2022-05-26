@@ -1,8 +1,9 @@
 #!/usr/bin/python3
+#
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-26 14:46:50
+LastEditTime: 2022-05-26 20:35:48
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -14,10 +15,10 @@ Prerequisites:
             * apt update
             * apt install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev libisl-dev gdb git device-tree-compiler wget
         * LLVM
-            * apt install libssl-dev -y
+            * apt install libssl-dev ninja-build -y
     * CentOS-like, CentOS 7
         * RISC-V utils
-            * yum -y install autoconf automake python3 libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel git make dtc
+            * yum -y install autoconf automake python3 python3-devel libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel git make dtc
         * LLVM
             * GCC 7 (use scl)
                 * yum install centos-release-scl -y
@@ -31,6 +32,15 @@ Prerequisites:
                 * cd CMake 
                 * ./bootstrap && make
                 * make install
+            * Ninja 
+                * re2c
+                    * git clone https://github.91chi.fun/https://github.com/skvadrik/re2c && cd re2c
+                    * autoreconf -i -W all
+                    * mkdir .build && cd .build && ../configure && make -j48 && make install
+                * ninja
+                    * git clone https://github.91chi.fun/https://github.com/ninja-build/ninja && cd ninja
+                    * python3 configure.py --bootstrap
+                    * [cp ninja /usr/bin] (or other path)
 Usage:
     0. By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
     1. [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
@@ -63,6 +73,10 @@ import sys
 
 RISCV_INSTALL = os.getcwd() + "/riscv_install"
 NUM_CORES = "48"
+LLVM_BUILD_TOOL = "Ninja"
+LLVM_BUILD_BIN = "ninja"
+#LLVM_BUILD_TOOL = "Unix Makefiles"
+#LLVM_BUILD_BIN = "make"
 
 LLVM_REPO = "https://github.91chi.fun/https://github.com/llvm/llvm-project"
 
@@ -198,8 +212,9 @@ def clone_llvm_repo():
 def build_llvm():
     os.chdir("llvm-project")
     remkdir_cd_build()
-    os.system('cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=`which gcc` -DCMAKE_CXX_COMPILER=`which g++` -DCMAKE_ASM_COMPILER=`which gcc` -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install -DLLVM_TARGETS_TO_BUILD="RISCV" -DLLVM_ENABLE_RUNTIMES=libcxx -DLLVM_ENABLE_PROJECTS="clang" ../llvm')
-    os.system("make -j" + NUM_CORES + " && make install")
+    
+    os.system('cmake -G "' + LLVM_BUILD_TOOL + '" -DCMAKE_C_COMPILER=`which gcc` -DCMAKE_CXX_COMPILER=`which g++` -DCMAKE_ASM_COMPILER=`which gcc` -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install -DLLVM_TARGETS_TO_BUILD="RISCV" -DLLVM_ENABLE_PROJECTS="clang" ../llvm')
+    os.system(LLVM_BUILD_BIN + " -j" + NUM_CORES + " && " + LLVM_BUILD_BIN + " install")
 
 
 if __name__ == "__main__":

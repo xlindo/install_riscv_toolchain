@@ -2,25 +2,46 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-25 15:51:00
+LastEditTime: 2022-05-26 14:46:50
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
     * riscv-isa-sim (spike)
     * riscv-pk
 Prerequisites:
-    * (Debian-like, Ubuntu) apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev libisl-dev gdb -y
-    * (CentOS-like) yum -y install autoconf automake python3 libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel
+    * Debian-like, Ubuntu
+        * RISC-V utils
+            * apt update
+            * apt install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev libisl-dev gdb git device-tree-compiler wget
+        * LLVM
+            * apt install libssl-dev -y
+    * CentOS-like, CentOS 7
+        * RISC-V utils
+            * yum -y install autoconf automake python3 libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel git make dtc
+        * LLVM
+            * GCC 7 (use scl)
+                * yum install centos-release-scl -y
+                * yum install devtoolset-7 -y
+                * scl enable devtoolset-7 bash
+                * source /opt/rh/devtoolset-7/enable
+                * echo "source /opt/rh/devtoolset-7/enable" >> ~/.bash_profile 
+            * CMake 3.13.4+ (required by LLVM)
+                * yum install openssl openssl-devel -y
+                * git clone https://github.91chi.fun/https://github.com/Kitware/CMake
+                * cd CMake 
+                * ./bootstrap && make
+                * make install
 Usage:
     0. By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
-    1. [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv}`
+    1. [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
         1.1 `linux` for `riscv64-linux-unknown-gnu`
         1.2 `elf` for `riscv64-unknown-elf`
         1.3 `elf-rvv` for `riscv64-unknown-elf` with `rvv`
+        1.4 `llvm` for LLVM clang
     2. [Manually]`python3 install_riscv_toolchain.py` and **follow the prompts**:
         2.1. Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
         2.2. Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
-        2.3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`
+        2.3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
         2.4. Waiting, and the compiling result will be in `RISCV_INSTALL`
 Example:
     `python3 install_riscv_toolchain.py elf elf-rvv`
@@ -30,6 +51,9 @@ Options in the script:
     * RISCV_INSTALL, the installation path
     * NUM_CORES, the number of cores for your CPU
     * *_REPO urls, in case you have unlimited github access
+ISSUES:
+    * The modules failed to update in riscv-gnu-toolchain
+        * Remove the whole repo and re-clone may be fast
 License: GPLv3
 Copyright (c) 2022 by https://xlindo.com, All Rights Reserved.
 '''
@@ -39,6 +63,8 @@ import sys
 
 RISCV_INSTALL = os.getcwd() + "/riscv_install"
 NUM_CORES = "48"
+
+LLVM_REPO = "https://github.91chi.fun/https://github.com/llvm/llvm-project"
 
 RISCV_GNU_TOOLCHAIN_REPO = "https://github.91chi.fun/https://github.com/riscv/riscv-gnu-toolchain"
 RISCV_PK_REPO = "https://github.91chi.fun/https://github.com/riscv-software-src/riscv-pk.git"
@@ -82,7 +108,14 @@ def clone_repo(repo):
     os.system("git clone " + repo)
 
 
-def clone_repos():
+def clone_riscv_repos():
+    if os.path.exists("riscv-gnu-toolchain"):
+        os.system("rm -rf riscv-gnu-toolchain")
+    if os.path.exists("riscv-pk"):
+        os.system("rm -rf riscv-pk")
+    if os.path.exists("riscv-isa-sim"):
+        os.system("rm -rf riscv-isa-sim")
+        
     with Pool(len(RISCV_REPOS)) as pl:
         pl.map(clone_repo, RISCV_REPOS)
 
@@ -104,8 +137,12 @@ def update_gitmodules():
     os.chdir("..")
 
 
-def build_riscv64_tools(target):
-    for tg in target:
+def build_riscv64_tools(targets):
+    if not targets:
+        return
+    clone_riscv_repos()
+    update_gitmodules()
+    for tg in targets:
         INSTALL_PATH = RISCV_INSTALL + '/' + tg
         if "elf" == tg:
             GCC_BRANCH = "cd riscv-gcc && git checkout riscv-gcc-12.1.0 && cd .."
@@ -152,45 +189,77 @@ def build_riscv64_tools(target):
         os.chdir("../..")
 
 
+def clone_llvm_repo():
+    if os.path.exists("llvm-project"):
+        os.system("rm -rf llvm-project")
+    os.system("git clone " + LLVM_REPO)
+
+
+def build_llvm():
+    os.chdir("llvm-project")
+    remkdir_cd_build()
+    os.system('cmake -G "Unix Makefiles" -DCMAKE_C_COMPILER=`which gcc` -DCMAKE_CXX_COMPILER=`which g++` -DCMAKE_ASM_COMPILER=`which gcc` -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install -DLLVM_TARGETS_TO_BUILD="RISCV" -DLLVM_ENABLE_RUNTIMES=libcxx -DLLVM_ENABLE_PROJECTS="clang" ../llvm')
+    os.system("make -j" + NUM_CORES + " && make install")
+
+
 if __name__ == "__main__":
-    print("RISC-V toolchain will be installed into " + RISCV_INSTALL)
-    if len(sys.argv) > 1:
+    targets = sys.argv[1:]
+    if targets:
         # Automatically install riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk without interruption, BUT all things will be reconstructed.
-        clone_repos()
-        update_gitmodules()
-        build_riscv64_tools(sys.argv[1:])
+        if "llvm" in targets:
+            clone_llvm_repo()
+            build_llvm()
+            targets.remove("llvm")
+        # targets only contain riscv utils
+        build_riscv64_tools(targets)
     else:
-        # Clone repos
-        opt_clone_repos = input(
-            "Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) "
-        )
-        if opt_clone_repos in ['y', 'Y']:
-            clone_repos()
-        else:
-            print("Skip cloning repos...")
-
-        # modify riscv-gnu-toolchain to local source
-        # time consuming
-        opt_update_gitmodules = input(
-            "Update the Modules for riscv-gnu-toolchain? (y/[N]) ")
-        if opt_update_gitmodules in ['y', 'Y']:
-            update_gitmodules()
-        else:
-            print("Skip updating gitmodules...")
-
-        opt_build_targets = input("""Choose the building targets: (1/2/3)
+        opt_build_target = input("""Choose the building targets: (1/2/3/4)
 1. riscv64-linux-unknown-gnu, spike and pk
 2. riscv64-unknown-elf, spike and pk
 3. riscv64-unknown-elf with rvv, spike and pk
+4. LLVM latest
 
 >>> """)
-        if "1" == opt_build_targets:
-            build_riscv64_tools(["linux"])
-        elif "2" == opt_build_targets:
-            build_riscv64_tools(["elf"])
-        elif "3" == opt_build_targets:
-            build_riscv64_tools(["elf-rvv"])
+
+        if "4" == opt_build_target:
+            # Clone repo
+            opt_clone_repo = input("Re-clone llvm-project repo? (y/[N]) >>> ")
+            if opt_clone_repo in ['y', 'Y']:
+                clone_llvm_repo()
+            else:
+                print("Skip cloning llvm-project...")
+            build_llvm()
+        elif opt_build_target in ["1", "2", "3"]:
+            # Clone repos
+            opt_clone_repo = input(
+                "Re-clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) >>> "
+            )
+            if opt_clone_repo in ['y', 'Y']:
+                clone_riscv_repos()
+            else:
+                print("Skip cloning repos...")
+
+            # modify riscv-gnu-toolchain to local source
+            # time consuming
+            opt_update_gitmodules = input(
+                "Update the submodules in riscv-gnu-toolchain? (y/[N]) >>> ")
+            if opt_update_gitmodules in ['y', 'Y']:
+                update_gitmodules()
+            else:
+                print("Skip updating gitmodules...")
+
+            if "1" == opt_build_target:
+                build_riscv64_tools(["linux"])
+            elif "2" == opt_build_target:
+                build_riscv64_tools(["elf"])
+            elif "3" == opt_build_target:
+                build_riscv64_tools(["elf-rvv"])
+
         else:
             print("Invalid input...quit...")
+            sys.exit(1)
 
-    print("Script finished! You can find the installation in " + RISCV_INSTALL)
+    if targets:
+        print("Script finished! You can find the installation for RISC-V tools in " + RISCV_INSTALL)
+    if "llvm" in sys.argv:
+        print("You can find the installation for LLVM tools in llvm-project/install")

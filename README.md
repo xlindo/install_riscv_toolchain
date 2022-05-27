@@ -21,12 +21,17 @@ This project helps automatically install
 * RISC-V utils
     * `yum -y install autoconf automake python3 python3-devel libmpc-devel mpfr-devel gmp-devel gawk  bison flex texinfo patchutils gcc gcc-c++ zlib-devel expat-devel git make dtc`
 * LLVM
+    * isl **IMPORTANT!!!**
+        * `wget ftp://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2`
+        * `tar -jxvf isl-0.18.tar.bz2 && cd isl-0.18 `
+        * `./configure && make -j48 && make install`
+        * `echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc`
     * GCC 7 (use scl)
         * `yum install centos-release-scl -y`
         * `yum install devtoolset-7 -y`
         * `scl enable devtoolset-7 bash`
         * `source /opt/rh/devtoolset-7/enable`
-        * `echo "source /opt/rh/devtoolset-7/enable" >> ~/.bash_profile` 
+        * `echo "source /opt/rh/devtoolset-7/enable" >> ~/.bashrc` 
     * CMake 3.13.4+ (required by LLVM)
         * `yum install openssl openssl-devel -y`
         * `git clone https://github.91chi.fun/https://github.com/Kitware/CMake && cd CMake`

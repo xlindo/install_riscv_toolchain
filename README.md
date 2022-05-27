@@ -49,20 +49,41 @@ This project helps automatically install
 
 ## Getting Started
 
-By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
+### Installation options
 
-This script could be executed with or without an option.
+> Path: By default, the installation path is `./riscv_install` (`RISCV_INSTALL`) and `llvm-project/install`
 
-* [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv}`
-    1. `linux` for `riscv64-linux-unknown-gnu`
-    2. `elf` for `riscv64-unknown-elf`
-    3. `elf-rvv` for `riscv64-unknown-elf` with `rvv`
-    4. `llvm` for LLVM clang
-* [Manually]`python3 install_riscv_toolchain.py` and follow the prompts:
-    1. Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
-    2. Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
-    3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`
-    4. Waiting, and the compiling result will be in `RISCV_INSTALL`
+#### Auto
+
+> It may take 30+ minutes for a high-performance computer.
+
+`python3 install_riscv_toolchain.py auto`
+
+All repos ({linux} {elf} {elf-rvv} {llvm}) will be downloaded and built without interruption
+
+#### Semi-auto
+
+`python3 install_riscv_toolchain.py all`
+
+All repos ({linux} {elf} {elf-rvv} {llvm}) will **almost** automatically except some downloading selections.
+
+#### Partially
+
+`python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
+
+* `linux` for `riscv64-linux-unknown-gnu`
+* `elf` for `riscv64-unknown-elf`
+* `elf-rvv` for `riscv64-unknown-elf` with `rvv`
+* `llvm` for LLVM clang
+
+#### Manually
+
+`python3 install_riscv_toolchain.py` then **follow the prompts**
+
+* Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
+* Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
+* Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
+* Waiting, and the compiling result will be in `RISCV_INSTALL`
 
 ### Example
     
@@ -75,6 +96,7 @@ This will automatically install `spike`, `pk`, `riscv64-unknown-elf`-toolchain a
 * RISCV_INSTALL, the installation path
 * NUM_CORES, the number of cores for your CPU
 * *_REPO urls, in case you have unlimited github access
+* LLVM_BUILD_TOOL and LLVM_BUILD_BIN, if no ninja is installed
 
 ## ISSUES
 

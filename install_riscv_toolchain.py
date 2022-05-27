@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-27 18:00:37
+LastEditTime: 2022-05-27 23:22:42
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -46,17 +46,21 @@ Prerequisites:
                     * python3 configure.py --bootstrap
                     * [cp ninja /usr/bin] (or other path)
 Usage:
-    0. By default, the installation path is `./riscv_install` (`RISCV_INSTALL`)
-    1. [Auto install] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
-        1.1 `linux` for `riscv64-linux-unknown-gnu`
-        1.2 `elf` for `riscv64-unknown-elf`
-        1.3 `elf-rvv` for `riscv64-unknown-elf` with `rvv`
-        1.4 `llvm` for LLVM clang
-    2. [Manually]`python3 install_riscv_toolchain.py` and **follow the prompts**:
-        2.1. Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
-        2.2. Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
-        2.3. Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
-        2.4. Waiting, and the compiling result will be in `RISCV_INSTALL`
+    * By default, the installation path is `./riscv_install` (`RISCV_INSTALL`) and `llvm-project/install`
+    * [Auto] `python3 install_riscv_toolchain.py auto`
+        * All repos ({linux} {elf} {elf-rvv} {llvm}) will be downloaded and built without interruption
+    * [Semi-auto] `python3 install_riscv_toolchain.py all`
+        * All repos ({linux} {elf} {elf-rvv} {llvm}) will **almost** automatically except some downloading selections.
+    * [Partially] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
+        * `linux` for `riscv64-linux-unknown-gnu`
+        * `elf` for `riscv64-unknown-elf`
+        * `elf-rvv` for `riscv64-unknown-elf` with `rvv`
+        * `llvm` for LLVM clang
+    * [Manually]`python3 install_riscv_toolchain.py` then **follow the prompts**
+        * Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
+        * Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
+        * Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
+        * Waiting, and the compiling result will be in `RISCV_INSTALL`
 Example:
     `python3 install_riscv_toolchain.py elf elf-rvv`
 
@@ -65,6 +69,7 @@ Options in the script:
     * RISCV_INSTALL, the installation path
     * NUM_CORES, the number of cores for your CPU
     * *_REPO urls, in case you have unlimited github access
+    * LLVM_BUILD_TOOL and LLVM_BUILD_BIN, if no ninja is installed
 ISSUES:
     * The modules failed to update in riscv-gnu-toolchain
         * Remove the whole repo and re-clone may be fast

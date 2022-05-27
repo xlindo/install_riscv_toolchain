@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-27 10:10:54
+LastEditTime: 2022-05-27 10:18:02
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -128,7 +128,7 @@ def clone_riscv_repos():
         os.system("rm -rf riscv-pk")
     if os.path.exists("riscv-isa-sim"):
         os.system("rm -rf riscv-isa-sim")
-        
+
     with Pool(len(RISCV_REPOS)) as pl:
         pl.map(clone_repo, RISCV_REPOS)
 
@@ -153,7 +153,7 @@ def update_gitmodules():
 def build_riscv64_tools(targets):
     if not targets:
         return
-        
+
     for tg in targets:
         INSTALL_PATH = RISCV_INSTALL + '/' + tg
         if "elf" == tg:
@@ -210,9 +210,10 @@ def clone_llvm_repo():
 def build_llvm():
     os.chdir("llvm-project")
     remkdir_cd_build()
-    
+
     os.system('cmake -G "' + LLVM_BUILD_TOOL + '" -DCMAKE_C_COMPILER=`which gcc` -DCMAKE_CXX_COMPILER=`which g++` -DCMAKE_ASM_COMPILER=`which gcc` -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install -DLLVM_TARGETS_TO_BUILD="RISCV" -DLLVM_ENABLE_PROJECTS="clang" ../llvm')
-    os.system(LLVM_BUILD_BIN + " -j" + NUM_CORES + " && " + LLVM_BUILD_BIN + " install")
+    os.system(LLVM_BUILD_BIN + " -j" + NUM_CORES +
+              " && " + LLVM_BUILD_BIN + " install")
 
 
 if __name__ == "__main__":
@@ -223,8 +224,11 @@ if __name__ == "__main__":
             clone_llvm_repo()
             build_llvm()
             targets.remove("llvm")
-        # targets only contain riscv utils
-        build_riscv64_tools(targets)
+        if targets[0] in ["elf", "elf-rvv", "linux"]:
+            # targets only contain riscv utils
+            clone_riscv_repos()
+            update_gitmodules()
+            build_riscv64_tools(targets)
     else:
         opt_build_target = input("""Choose the building targets: (1/2/3/4)
 1. riscv64-linux-unknown-gnu, spike and pk
@@ -272,7 +276,7 @@ if __name__ == "__main__":
             print("Invalid input...quit...")
             sys.exit(1)
 
-    if targets:
+    if targets[0] in ["elf", "elf-rvv", "linux"]:
         print("Script finished! You can find the installation for RISC-V tools in " + RISCV_INSTALL)
     if "llvm" in sys.argv:
         print("You can find the installation for LLVM tools in llvm-project/install")

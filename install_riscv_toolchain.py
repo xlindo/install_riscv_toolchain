@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-26 20:54:15
+LastEditTime: 2022-05-27 10:10:54
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -153,8 +153,7 @@ def update_gitmodules():
 def build_riscv64_tools(targets):
     if not targets:
         return
-    clone_riscv_repos()
-    update_gitmodules()
+        
     for tg in targets:
         INSTALL_PATH = RISCV_INSTALL + '/' + tg
         if "elf" == tg:

@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-27 17:49:43
+LastEditTime: 2022-05-27 18:00:37
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -244,18 +244,18 @@ def build_llvm():
 if __name__ == "__main__":
     targets = sys.argv[1:]
 
-    if 1 == len(targets):
-        if "all" == targets[0]:
-            # Install all tools bootstrap
-            valid_rv_targets = ["elf", "elf-rvv", "linux", "llvm"]
-        elif "auto" == targets[0]:
-            # Re-clone and install all tools without interruption
-            clone_llvm_repo(auto=True)
-            build_llvm()
-            clone_riscv_repos(auto=True)
-            build_riscv64_tools(["elf", "elf-rvv", "linux"])
-            print("Finished! You can find the installation for LLVM tools in llvm-project/install and RISC-V utils in riscv_install.")
-            sys.exit(0)
+    if 1 == len(targets) and "auto" == targets[0]:
+        # Re-clone and install all tools without interruption
+        clone_llvm_repo(auto=True)
+        build_llvm()
+        clone_riscv_repos(auto=True)
+        build_riscv64_tools(["elf", "elf-rvv", "linux"])
+        print("Finished! You can find the installation for LLVM tools in llvm-project/install and RISC-V utils in riscv_install.")
+        sys.exit(0)
+
+    if 1 == len(targets) and "all" == targets[0]:
+        # Install all tools bootstrap
+        valid_rv_targets = ["elf", "elf-rvv", "linux", "llvm"]
     else:
         # Install specific targets
         valid_rv_targets = [v_t for v_t in targets if v_t in [

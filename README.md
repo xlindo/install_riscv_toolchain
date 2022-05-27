@@ -49,11 +49,11 @@ This project helps automatically install
 
 ## Getting Started
 
-### Installation options
+### Installation path
 
-> Path: By default, the installation path is `./riscv_install` (`RISCV_INSTALL`) and `llvm-project/install`
+By default, the installation path is `./riscv_install` (`RISCV_INSTALL`) and `llvm-project/install`
 
-#### Auto
+### Auto
 
 > It may take 30+ minutes for a high-performance computer.
 
@@ -61,13 +61,13 @@ This project helps automatically install
 
 All repos ({linux} {elf} {elf-rvv} {llvm}) will be downloaded and built without interruption
 
-#### Semi-auto
+### Semi-auto
 
 `python3 install_riscv_toolchain.py all`
 
 All repos ({linux} {elf} {elf-rvv} {llvm}) will **almost** automatically except some downloading selections.
 
-#### Partially
+### Partially
 
 `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
 
@@ -76,14 +76,14 @@ All repos ({linux} {elf} {elf-rvv} {llvm}) will **almost** automatically except 
 * `elf-rvv` for `riscv64-unknown-elf` with `rvv`
 * `llvm` for LLVM clang
 
-#### Manually
+### Manually
 
 `python3 install_riscv_toolchain.py` then **follow the prompts**
 
-* Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
-* Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
 * Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
-* Waiting, and the compiling result will be in `RISCV_INSTALL`
+* Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
+  * If clone, submodules in `riscv-gnu-toolchain` update (qemu will be removed)
+* Waiting for the compiling
 
 ### Example
     

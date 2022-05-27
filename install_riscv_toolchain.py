@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-27 23:22:42
+LastEditTime: 2022-05-27 23:28:42
 LastEditors: hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -57,10 +57,10 @@ Usage:
         * `elf-rvv` for `riscv64-unknown-elf` with `rvv`
         * `llvm` for LLVM clang
     * [Manually]`python3 install_riscv_toolchain.py` then **follow the prompts**
-        * Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
-        * Update submodules in `riscv-gnu-toolchain` or not (qemu will be removed)
         * Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
-        * Waiting, and the compiling result will be in `RISCV_INSTALL`
+        * Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
+            * If clone, submodules in `riscv-gnu-toolchain` update (qemu will be removed)
+        * Waiting for the compiling
 Example:
     `python3 install_riscv_toolchain.py elf elf-rvv`
 

@@ -179,17 +179,17 @@ def build_riscv64_tools(targets):
     for tg in targets:
         INSTALL_PATH = RISCV_INSTALL + '/' + tg
         if "elf" == tg:
-            GCC_BRANCH = "cd riscv-gcc && git checkout riscv-gcc-12.1.0 && cd .."
+            GCC_BRANCH = "cd riscv-gcc && git reset --hard riscv-gcc-12.1.0 && cd .."
             TOOLCHAIN_CONFIG_CMD = "../configure --prefix=" + INSTALL_PATH
             TOOLCHAIN_MAKE_CMD = "make -j" + NUM_CORES
             PK_CONFIG_CMD = "../configure --host=riscv64-unknown-elf CC=riscv64-unknown-elf-gcc --prefix="+INSTALL_PATH
         elif "elf-rvv" == tg:
-            GCC_BRANCH = "cd riscv-gcc && git checkout riscv-gcc-rvv-next && cd .."
+            GCC_BRANCH = "cd riscv-gcc && git reset --hard riscv-gcc-rvv-next && cd .."
             TOOLCHAIN_CONFIG_CMD = "../configure --with-arch=rv64gcv --with-abi=lp64d --prefix=" + INSTALL_PATH
             TOOLCHAIN_MAKE_CMD = "make -j" + NUM_CORES
             PK_CONFIG_CMD = "../configure --host=riscv64-unknown-elf CC=riscv64-unknown-elf-gcc --prefix="+INSTALL_PATH
         elif "linux" == tg:
-            GCC_BRANCH = "cd riscv-gcc && git checkout riscv-gcc-12.1.0 && cd .."
+            GCC_BRANCH = "cd riscv-gcc && git reset --hard riscv-gcc-12.1.0 && cd .."
             TOOLCHAIN_CONFIG_CMD = "../configure --prefix=" + INSTALL_PATH
             TOOLCHAIN_MAKE_CMD = "make linux -j" + NUM_CORES
             PK_CONFIG_CMD = "../configure --host=riscv64-unknown-linux-gnu CC=riscv64-unknown-linux-gnu-gcc --prefix="+INSTALL_PATH

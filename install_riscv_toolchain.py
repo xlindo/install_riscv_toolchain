@@ -3,8 +3,8 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-27 23:28:42
-LastEditors: hi@xlindo.com
+LastEditTime: 2022-05-29 18:45:40
+LastEditors: xlindo && hi@xlindo.com
 Description: This project helps automatically install
     * riscv-gnu-toolchain
     * riscv-isa-sim (spike)
@@ -132,6 +132,7 @@ def clone_repo(repo):
 
 
 def clone_riscv_repos(auto=False):
+    opt_clone_repo = 'N'
     if not auto:
         opt_clone_repo = input(
             "Re-clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) >>> "
@@ -224,6 +225,7 @@ def build_riscv64_tools(targets):
 
 
 def clone_llvm_repo(auto=False):
+    opt_clone_repo = 'N'
     if not auto:
         opt_clone_repo = input("Re-clone llvm-project repo? (y/[N]) >>> ")
     else:
@@ -300,15 +302,6 @@ if __name__ == "__main__":
                 clone_riscv_repos()
             else:
                 print("Skip cloning repos...")
-
-            # modify riscv-gnu-toolchain to local source
-            # time consuming
-            opt_update_gitmodules = input(
-                "Update the submodules in riscv-gnu-toolchain? (y/[N]) >>> ")
-            if opt_update_gitmodules in ['y', 'Y']:
-                update_gitmodules()
-            else:
-                print("Skip updating gitmodules...")
 
             if "1" == opt_build_target:
                 build_riscv64_tools(["linux"])

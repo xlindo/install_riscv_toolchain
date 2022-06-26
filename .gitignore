@@ -2,6 +2,7 @@ riscv-gnu-toolchain
 riscv-isa-sim
 riscv-pk
 riscv_install
+riscv_install_32
 llvm-project
 
 __pycache__

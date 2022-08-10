@@ -3,8 +3,8 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-05-29 18:45:40
-LastEditors: xlindo && hi@xlindo.com
+LastEditTime: 2022-08-10 11:26:22
+LastEditors: xinlin.du@rivai.ai
 Description: This project helps automatically install
     * riscv-gnu-toolchain
     * riscv-isa-sim (spike)
@@ -48,16 +48,17 @@ Prerequisites:
 Usage:
     * By default, the installation path is `./riscv_install` (`RISCV_INSTALL`) and `llvm-project/install`
     * [Auto] `python3 install_riscv_toolchain.py auto`
-        * All repos ({linux} {elf} {elf-rvv} {llvm}) will be downloaded and built without interruption
+        * All repos ({linux} {linux-rvv} {elf} {elf-rvv} {llvm}) will be downloaded and built without interruption
     * [Semi-auto] `python3 install_riscv_toolchain.py all`
-        * All repos ({linux} {elf} {elf-rvv} {llvm}) will **almost** automatically except some downloading selections.
-    * [Partially] `python3 install_riscv_toolchain.py {linux} {elf} {elf-rvv} {llvm}`
+        * All repos ({linux} {linux-rvv} {elf} {elf-rvv} {llvm}) will **almost** automatically except some downloading selections.
+    * [Partially] `python3 install_riscv_toolchain.py {linux} {linux-rvv} {elf} {elf-rvv} {llvm}`
         * `linux` for `riscv64-linux-unknown-gnu`
+        * `linux-rvv` for `riscv64-linux-unknown-gnu` with `rvv`
         * `elf` for `riscv64-unknown-elf`
         * `elf-rvv` for `riscv64-unknown-elf` with `rvv`
         * `llvm` for LLVM clang
     * [Manually]`python3 install_riscv_toolchain.py` then **follow the prompts**
-        * Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
+        * Choose build target from `riscv64-linux-unknown-gnu`, `riscv64-linux-unknown-gnu` with `rvv`,`riscv64-unknown-elf`, `riscv64-unknown-elf` with `rvv`, LLVM
         * Clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk or not
             * If clone, submodules in `riscv-gnu-toolchain` update (qemu will be removed)
         * Waiting for the compiling
@@ -194,6 +195,11 @@ def build_riscv64_tools(targets):
             TOOLCHAIN_CONFIG_CMD = "../configure --prefix=" + INSTALL_PATH
             TOOLCHAIN_MAKE_CMD = "make linux -j" + NUM_CORES
             PK_CONFIG_CMD = "../configure --host=riscv64-unknown-linux-gnu CC=riscv64-unknown-linux-gnu-gcc --prefix="+INSTALL_PATH
+        elif "linux-rvv" == tg:
+            GCC_BRANCH = "cd riscv-gcc && git reset --hard origin/riscv-gcc-rvv-next && cd .."
+            TOOLCHAIN_CONFIG_CMD = "../configure --with-arch=rv64gcv --with-abi=lp64d --prefix=" + INSTALL_PATH
+            TOOLCHAIN_MAKE_CMD = "make linux -j" + NUM_CORES
+            PK_CONFIG_CMD = "../configure --host=riscv64-unknown-linux-gnu CC=riscv64-unknown-linux-gnu-gcc --prefix="+INSTALL_PATH
         else:
             print("Invalid target!")
             continue
@@ -256,17 +262,17 @@ if __name__ == "__main__":
         clone_llvm_repo(auto=True)
         build_llvm()
         clone_riscv_repos(auto=True)
-        build_riscv64_tools(["elf", "elf-rvv", "linux"])
+        build_riscv64_tools(["elf", "elf-rvv", "linux", "linux-rvv"])
         print("Finished! You can find the installation for LLVM tools in llvm-project/install and RISC-V utils in riscv_install.")
         sys.exit(0)
 
     if 1 == len(targets) and "all" == targets[0]:
         # Install all tools bootstrap
-        valid_rv_targets = ["elf", "elf-rvv", "linux", "llvm"]
+        valid_rv_targets = ["elf", "elf-rvv", "linux", "linux-rvv", "llvm"]
     else:
         # Install specific targets
         valid_rv_targets = [v_t for v_t in targets if v_t in [
-            "elf", "elf-rvv", "linux", "llvm"]]
+            "elf", "elf-rvv", "linux", "linux-rvv", "llvm"]]
 
     if valid_rv_targets:
         # Automatically install riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk without interruption, BUT all things will be reconstructed.
@@ -276,24 +282,25 @@ if __name__ == "__main__":
             build_llvm()
             valid_rv_targets.remove("llvm")
         if valid_rv_targets:
-            # if targets and targets[0] in ["elf", "elf-rvv", "linux"]:
+            # if targets and targets[0] in ["elf", "elf-rvv", "linux", "linux-rvv"]:
             # targets only contain riscv utils
             clone_riscv_repos()
             build_riscv64_tools(valid_rv_targets)
     else:
         opt_build_target = input("""Choose the building targets: (1/2/3/4)
-1. riscv64-linux-unknown-gnu, spike and pk
-2. riscv64-unknown-elf, spike and pk
-3. riscv64-unknown-elf with rvv, spike and pk
-4. LLVM latest
+1. LLVM latest
+2. riscv64-linux-unknown-gnu, spike and pk (linux)
+3. riscv64-linux-unknown-gnu with rvv, spike and pk (linux-rvv)
+4. riscv64-unknown-elf, spike and pk (elf)
+5. riscv64-unknown-elf with rvv, spike and pk (elf-rvv)
 
 >>> """)
 
-        if "4" == opt_build_target:
+        if "1" == opt_build_target:
             # Clone repo
             clone_llvm_repo()
             build_llvm()
-        elif opt_build_target in ["1", "2", "3"]:
+        elif opt_build_target in ["2", "3", "4", "5"]:
             # Clone repos
             opt_clone_repo = input(
                 "Re-clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) >>> "
@@ -303,11 +310,13 @@ if __name__ == "__main__":
             else:
                 print("Skip cloning repos...")
 
-            if "1" == opt_build_target:
+            if "2" == opt_build_target:
                 build_riscv64_tools(["linux"])
-            elif "2" == opt_build_target:
-                build_riscv64_tools(["elf"])
             elif "3" == opt_build_target:
+                build_riscv64_tools(["linux-rvv"])
+            elif "4" == opt_build_target:
+                build_riscv64_tools(["elf"])
+            elif "5" == opt_build_target:
                 build_riscv64_tools(["elf-rvv"])
 
         else:

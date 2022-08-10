@@ -3,7 +3,7 @@
 '''
 Author: hi@xlindo.com
 Date: 2022-05-24 14:44:06
-LastEditTime: 2022-08-10 11:26:22
+LastEditTime: 2022-08-10 15:38:44
 LastEditors: xinlin.du@rivai.ai
 Description: This project helps automatically install
     * riscv-gnu-toolchain
@@ -243,6 +243,7 @@ def clone_llvm_repo(auto=False):
         os.system("git clone " + LLVM_REPO)
     else:
         print("Skip cloning llvm-project...")
+    os.system("cd llvm-project && git checkout origin/release/15.x && cd ..")
 
 
 def build_llvm():

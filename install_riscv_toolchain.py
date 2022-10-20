@@ -82,7 +82,7 @@ import os
 import sys
 
 RISCV_INSTALL = os.getcwd() + "/riscv_install"
-NUM_CORES = "48"
+NUM_CORES = "24"
 LLVM_BUILD_TOOL = "Ninja"
 LLVM_BUILD_BIN = "ninja"
 #LLVM_BUILD_TOOL = "Unix Makefiles"
@@ -90,19 +90,19 @@ LLVM_BUILD_BIN = "ninja"
 
 LLVM_REPO = "https://github.91chi.fun/https://github.com/llvm/llvm-project"
 
-RISCV_GNU_TOOLCHAIN_REPO = "https://github.91chi.fun/https://github.com/riscv/riscv-gnu-toolchain"
+RISCV_GNU_TOOLCHAIN_REPO = "https://github.91chi.fun/https://github.com/riscv-collab/riscv-gnu-toolchain"
 RISCV_PK_REPO = "https://github.91chi.fun/https://github.com/riscv-software-src/riscv-pk.git"
 RISCV_SPIKE_REPO = "https://github.91chi.fun/https://github.com/riscv-software-src/riscv-isa-sim"
 RISCV_REPOS = [RISCV_GNU_TOOLCHAIN_REPO, RISCV_PK_REPO, RISCV_SPIKE_REPO]
 
 DOT_GITMODULES = r"""[submodule "riscv-binutils"]
 	path = riscv-binutils
-	url = https://github.91chi.fun/https://github.com/riscv-collab/riscv-binutils-gdb.git
-	branch = riscv-binutils-2.38
+	url = https://gitee.com/mirrors_community_sourceware/git_binutils-gdb.git
+	branch = binutils-2_39-branch
 [submodule "riscv-gcc"]
 	path = riscv-gcc
 	url = https://github.91chi.fun/https://github.com/riscv-collab/riscv-gcc.git
-	branch = riscv-gcc-12.1.0
+	branch = riscv-gcc-rvv-next
 [submodule "glibc"]
 	path = glibc
 	url = https://gitee.com/mirrors_community_sourceware/glibc.git
@@ -151,8 +151,6 @@ def clone_riscv_repos(auto=False):
 
         with Pool(len(RISCV_REPOS)) as pl:
             pl.map(clone_repo, RISCV_REPOS)
-
-        update_gitmodules()
     else:
         print("Skip cloning repos...")
 
@@ -164,12 +162,16 @@ def remkdir_cd_build():
     os.chdir("build")
 
 
-def update_gitmodules():
+def update_gitmodules(target):
     os.chdir("riscv-gnu-toolchain")
-    os.system("git rm qemu")
-    os.system("rm -rf .gitmodules")
-    with open(".gitmodules", "w") as f:
-        f.write(DOT_GITMODULES)
+    if target in ["elf-rvv", "linux-rvv"]:
+        os.system("git reset --hard && git checkout rvv-next")
+        os.system("git rm qemu")
+        with open(".gitmodules", "w") as f:
+            f.write(DOT_GITMODULES)
+    else:
+        os.system("git reset --hard && git checkout master")
+        os.system("git rm qemu")
     os.system("git submodule update --init --recursive")
     os.chdir("..")
 
@@ -203,6 +205,8 @@ def build_riscv64_tools(targets):
         else:
             print("Invalid target!")
             continue
+
+        update_gitmodules(tg)
 
         if os.path.exists(INSTALL_PATH):
             os.system("rm -rf " + INSTALL_PATH)
@@ -303,22 +307,28 @@ if __name__ == "__main__":
             build_llvm()
         elif opt_build_target in ["2", "3", "4", "5"]:
             # Clone repos
-            opt_clone_repo = input(
-                "Re-clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) >>> "
-            )
-            if opt_clone_repo in ['y', 'Y']:
-                clone_riscv_repos()
-            else:
-                print("Skip cloning repos...")
+            #opt_clone_repo = input(
+            #    "Re-clone riscv-gnu-toolchain, riscv-isa-sim (spike), riscv-pk? (y/[N]) >>> "
+            #)
+            #if opt_clone_repo in ['y', 'Y']:
+            clone_riscv_repos()
+            #else:
+            #    print("Skip cloning repos...")
 
-            if "2" == opt_build_target:
-                build_riscv64_tools(["linux"])
-            elif "3" == opt_build_target:
-                build_riscv64_tools(["linux-rvv"])
-            elif "4" == opt_build_target:
-                build_riscv64_tools(["elf"])
-            elif "5" == opt_build_target:
-                build_riscv64_tools(["elf-rvv"])
+            opt_build = input(
+                "Start to build? (y/[N]) >>> "
+            )
+            if opt_build in ['y', 'Y']:
+                if "2" == opt_build_target:
+                    build_riscv64_tools(["linux"])
+                elif "3" == opt_build_target:
+                    build_riscv64_tools(["linux-rvv"])
+                elif "4" == opt_build_target:
+                    build_riscv64_tools(["elf"])
+                elif "5" == opt_build_target:
+                    build_riscv64_tools(["elf-rvv"])
+            else:
+                print("Skip building...")
 
         else:
             print("Invalid input...quit...")
